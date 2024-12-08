@@ -45,7 +45,9 @@ def print_with_attention(str):
     """
     for i in str:
         print(i, end=" ")
-        time.sleep(0.5)
+        time.sleep(0.3)
+        
+    time.sleep(1)
     print()
 
-print_with_attention("Print me with attention!")
+print_with_attention("\033[1mTHE INVESTMENT GAME\033[0m\n")
