@@ -88,6 +88,15 @@ class InvestmentGame():
         Method that starts the game
         """
         self.difficulty = self.set_difficulty()
+        previous_round_data = None
+        for i in range(self.ROUNDS):
+            current_round = Round(i+1, previous_round_data)
+            current_round_data = current_round.play()
+            self.rounds_data[f"round {i+1}"] = current_round_data
+            previous_round_data = current_round_data
+            print_game_history(i+1, self.rounds_data)
+            input("Hit any key to continue: ")
+        # end ########################################
         self.see_results()
 
 
@@ -129,13 +138,24 @@ class InvestmentGame():
         return diff_input
 
 
-def Round():
+class Round():
     """
-
+    A class for a round that creates a dictionary that will be a component of the InvestmentGame's dictionary
     """
+    def __init__(self, round, previous_round_data=None):
+        self.round = round
+        self.previous_round_data = previous_round_data
+    
+    def play(self):
+        print(f"Wir spielen jetzt die {self.round}. Runde.\nHier werden ganz viele methods geschrieben für die einzelnen modi. Auch wird hier zwischen None und '{''}' unterschieden.")
+        return {}
 
 
 # printing functions ############################
+def print_game_history(round, rounds_data):
+    print("print game history here")
+    input("hit any key to continue: ")
+
 def print_with_attention(str):
     """
     function that prints a text slowly to gather attention - I like it 
