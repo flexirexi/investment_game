@@ -1,6 +1,6 @@
 import gspread
 from google.oauth2.service_account import Credentials
-import time, os
+import time, os, sys
 
 TERMINAL_WIDTH = 78
 
@@ -18,7 +18,7 @@ SHEET = GSPREAD_CLIENT.open("investment_game")
 secs = SHEET.worksheet("securities")
 data = secs.get_all_values()
 
-class investment_game():
+class InvestmentGame():
     """
     the class of the game to be played
     """
@@ -29,6 +29,9 @@ class investment_game():
         self.rounds_data = {}
 
     def menu(self):
+        """
+        Method that welcomes the player and shows the start menu
+        """
         self.ptf_amount = 1000.00
         self.difficulty = ""
         self.rounds_data = {}
@@ -53,35 +56,83 @@ class investment_game():
         print_into_menu("4. exit game", True, False, False)
         print_throughout("_", True)
 
-        menu_input = input("Enter a number (1 to 4):")
-        if self.validate_menu_input(menu_input):
-            x = 4
-        else:
-            os.system('cls' if os.name == 'nt' else 'clear')
-            self.menu()
+        while True:
+            try:
+                menu_input = int(input("Enter a number (1 to 4):"))
 
-    def validate_menu_input(self, menu_input):
-        if menu_input == "4":
-            exit()
-        return False
+                if not isinstance(menu_input, int) or menu_input > 4 or menu_input < 1:
+                    raise ValueError
+                if menu_input == 1:
+                    self.start()
+                elif menu_input == 2:
+                    self.rules()
+                elif menu_input == 3:
+                    self.rankings()
+                elif menu_input == 4:
+                    exit()
+                else:
+                    self.menu()
+
+                break
+            except ValueError:
+                delete_last_line()
+                print("Please select a number between 1 and 4")
+                time.sleep(1)
+                delete_last_line()
+
+        self.menu()
+
 
     def start(self):
         """
-        Method that welcomes the player and shows the start menu
+        Method that starts the game
         """
-        self.show_menu()
         self.difficulty = self.set_difficulty()
+        self.see_results()
 
+
+    def rules(self, difficulty=None):
+        print("rules:(highlight the play mode if the user has already selected one)")
+        input("hit any key to continue: ")
+
+    
+    def rankings(self):
+        print("select the difficulty for which you want to see the ranking..")
+        input("hit any key to continue: ")
+
+
+    def see_results(self):
+        print("see here your results")
+        input("hit any key to continue: ")
 
     def set_difficulty(self):
         """
         The player choses either 'easy', 'medium' or 'hard' mode as a game difficulty
         """
-        diff = input("")
+        print("\033[1mSelect a game mode: \033[0m\n")
+        print("1. easy")
+        print("2. medium")
+        print("3. hard")
+        while True:
+            try:
+                diff_input = int(input("Enter a number (1 to 4):"))
+                if not isinstance(diff_input, int) or diff_input > 3 or diff_input < 1:
+                    raise ValueError
+                break
+
+            except ValueError:
+                delete_last_line()
+                print("Not valid. Please enter a number between 1 and 3")
+                time.sleep(1)
+                delete_last_line()
+        
+        return diff_input
 
 
-    def play(self):
-        x = 5
+def Round():
+    """
+
+    """
 
 
 # printing functions ############################
@@ -148,9 +199,13 @@ def print_into_menu(str, with_border, centralized, bold):
         str_centr_out *= " "
         print(str_start + str_centr_in + str_bold_in + sub_str + str_bold_out + str_centr_out + str_end)
     
-
+def delete_last_line():
+    "Deletes the last line in the STDOUT"
+    # cursor up one line
+    sys.stdout.write('\x1b[1A')
+    # delete last line
+    sys.stdout.write('\x1b[2K')
     
-    
 
-game = investment_game()
+game = InvestmentGame()
 game.menu()
