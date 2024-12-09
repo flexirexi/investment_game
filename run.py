@@ -55,10 +55,14 @@ class investment_game():
 
         menu_input = input("Enter a number (1 to 4):")
         if self.validate_menu_input(menu_input):
+            x = 4
+        else:
             os.system('cls' if os.name == 'nt' else 'clear')
             self.menu()
 
     def validate_menu_input(self, menu_input):
+        if menu_input == "4":
+            exit()
         return False
 
     def start(self):
@@ -87,9 +91,9 @@ def print_with_attention(str):
     """
     for i in str:
         print(f"\033[1;47;30m{i}\033[0m", end="\033[47;30m \033[0m")
-        time.sleep(0.1)
+        time.sleep(0.15)
 
-    time.sleep(0.1)
+    time.sleep(0.5)
     print("\n")
 
 def print_throughout(char, with_border):
