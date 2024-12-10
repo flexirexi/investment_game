@@ -40,20 +40,20 @@ class InvestmentGame():
         print_with_attention("THE INVESTMENT GAME")
         
         print_throughout("_", False)
-        print_into_menu("MENU", True, True, True)
+        print_into_menu("MENU", True, True, True, False, False)
         print_throughout("-", True)
         
-        print_into_menu("Welcome to the investment game!", True, False, False)
+        print_into_menu("Welcome to the investment game!", True, False, False, False, False)
         print_throughout(" ", True)
         print_into_menu(f"You have a portfolio of 3 securities and one cash account. You have to allocate {self.ptf_amount:.2f}€ to them, at the beginning of the game. You will play 5 rounds. Each round you can re-allocate your money and see how it gains profits! But be careful there are costs - Please read the rules! At the end, your final portfolio value will be ranked amongst other players. Are you be the best investor?", 
-            True, False, False)
+            True, False, False, False, False)
         print_throughout("-", True)
-        print_into_menu("Enter a number:", True, False, True)
+        print_into_menu("Enter a number:", True, False, True, False, False)
         print_throughout(" ", True)
-        print_into_menu("1. start", True, False, True)
-        print_into_menu("2. rules", True, False, False)
-        print_into_menu("3. rankings", True, False, False)
-        print_into_menu("4. exit game", True, False, False)
+        print_into_menu("1. start", True, False, True, False, False)
+        print_into_menu("2. rules", True, False, False, False, False)
+        print_into_menu("3. rankings", True, False, False, False, False)
+        print_into_menu("4. exit game", True, False, False, False, False)
         print_throughout("_", True)
 
         while True:
@@ -128,7 +128,6 @@ class InvestmentGame():
                 if not isinstance(diff_input, int) or diff_input > 3 or diff_input < 1:
                     raise ValueError
                 break
-
             except ValueError:
                 delete_last_line()
                 print("Not valid. Please enter a number between 1 and 3")
@@ -147,11 +146,48 @@ class Round():
         self.previous_round_data = previous_round_data
     
     def play(self):
-        print(f"Wir spielen jetzt die {self.round}. Runde.\nHier werden ganz viele methods geschrieben für die einzelnen modi. Auch wird hier zwischen None und '{''}' unterschieden.")
+        print_game_header()
+
+        if self.previous_round_data == None: 
+            #play the first round:
+            print("Please \033[1mallocate 100 000€ to the above 3 securities and 1 cash\033[0m.")
+            print("")
+            while True:
+                try:
+                    alloc_input = split(input("Enter a number (1 to 4):"),",")
+                    if not isinstance(diff_input, int) or diff_input > 3 or diff_input < 1:
+                        raise ValueError
+                    break
+                except ValueError:
+                    delete_last_line()
+                    print("Not valid. Please enter a number between 1 and 3")
+                    time.sleep(1)
+                    delete_last_line()
+            
+        else:
+            #play any other (none-first) round:
+            y=5
         return {}
+    
 
 
 # printing functions ############################
+def print_table_into_menu(val1="", val2="", val3="", val4="", val5="", val6="", color=False):
+    c = ""
+    if color:
+        c = "\033[34m"
+    
+    print(f"| {c}{val1:<12}{val2:>12}{val3:>12}{val4:>12}{val5:>12}\033[1m{val6:>15}\033[0m |")
+
+def print_game_header():
+    print_throughout("_", False)
+    print_into_menu("YOUR PORTFOLIO", True, True, True, False, False)
+    print_throughout("-",True)
+    print_table_into_menu("", "SAP", "TESLA", "ALIBABA", "CASH", "TOTAL", True)
+    print_throughout(" ", True)
+    print_into_menu("  ROUND 1  ", True, True, True, True, False)
+    print("")
+
 def print_game_history(round, rounds_data):
     print("print game history here")
     input("hit any key to continue: ")
@@ -182,7 +218,7 @@ def print_throughout(char, with_border):
         print("|", end="")
     print("")
 
-def print_into_menu(str, with_border, centralized, bold):
+def print_into_menu(str, with_border, centralized, bold, background, underlined):
     """
     This function prints a string that fits into the menu width and format 
     """
@@ -190,6 +226,8 @@ def print_into_menu(str, with_border, centralized, bold):
     str_start = ""
     str_bold_in = ""
     str_bold_out = ""
+    str_background_in = ""
+    str_underlined_in = ""
     str_centr_in = ""
     str_centr_out = ""
     str_end = ""
@@ -201,6 +239,14 @@ def print_into_menu(str, with_border, centralized, bold):
     
     if bold:
         str_bold_in = "\033[1m"
+        str_bold_out = "\033[0m"
+    
+    if background:
+        str_background_in = "\033[43m"
+        str_bold_out = "\033[0m"
+    
+    if underlined:
+        str_underlined_in = "\033[4m"
         str_bold_out = "\033[0m"
 
     str = [str[i:i+total] for i in range(0, len(str), total)]
@@ -217,7 +263,7 @@ def print_into_menu(str, with_border, centralized, bold):
 
         str_centr_in *= " "
         str_centr_out *= " "
-        print(str_start + str_centr_in + str_bold_in + sub_str + str_bold_out + str_centr_out + str_end)
+        print(str_start + str_centr_in + str_bold_in + str_underlined_in + str_background_in + sub_str + str_bold_out + str_centr_out + str_end)
     
 def delete_last_line():
     "Deletes the last line in the STDOUT"
@@ -226,6 +272,7 @@ def delete_last_line():
     # delete last line
     sys.stdout.write('\x1b[2K')
     
+
 
 game = InvestmentGame()
 game.menu()
