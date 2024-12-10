@@ -191,36 +191,52 @@ class Round():
             self.main_round()
 
         else:
-            y=5
+            print("play another round (not the first round)")
 
-        return {}
+        return {
+            "before_start_reallocate"   : self.before_start_reallocate,
+            "before_start_paytax"       : self.before_start_paytax,
+            "before_start_trnsx_costs"  : self.before_start_trnsx_costs,
+            "booking_value"             : self.booking_value,
+            "start_value"               : self.start_value,
+            "performance"               : self.performance,
+            "dividends"                 : self.dividends,
+            "end_value"                 : self.end_value,
+            "delta_start_end"           : self.delta_start_end
+        }
     
     def pre_round(self, alloc_input):
         """
         Reallocation process: This method handles everything to determine the start value, including costs and taxes 
         """
-        before_start_reallocate     = 0
-        before_start_paytax         = 0
-        before_start_trnsx_costs    = 0
-        booking_value               = 0
-        start_value                 = 0 
+        before_start_reallocate     = []
+        before_start_paytax         = []
+        before_start_trnsx_costs    = []
+        booking_value               = []
+        start_value                 = [] 
+        alloc_input2                = [] #when selling, taxes might occur->it reduces the money to be allocated, but which purchase to reduce?? the player must decide again
 
         before_start_reallocate = self.pre_round_get_reallocation(alloc_input) 
         #get hypothetical delta (gross amount), no extra inputs here
 
-        before_start_paytax     = self.pre_round_get_tax_paid(before_start_reallocate) 
+        before_start_paytax = self.pre_round_get_tax_paid(before_start_reallocate) 
         #get hypothetical taxes to be paid on negative reallocation numbers; 
         #for the time being, it will be 0 -> taxes reduce the total amount to be allocated, but where? 
-        #the player must decide -> add extra input: -> where to reduce the reallocation values (only positive numbers)
+        #we determine taxes from negative numbers and charge them on positive numbers aka: the player
+        #has less money to allocate after taxes
+        if sum(before_start_paytax) > 0:
+            before_start_reallocate = self.pre_round_adjust_reallocation(before_start_reallocate, before_start_paytax)
 
-        before_start_trnsx_costs = self.pre_round_get_transaction_costs(before_start_reallocate, before_start_paytax) 
-        #get hypothetical transaction costs on positive reallocation numbers
+        before_start_trnsx_costs = self.pre_round_get_transaction_costs(before_start_reallocate) 
+        #get hypothetical transaction costs on positive reallocation numbers (after taxes)
+        #the positive numbers, now, will be charged by transaction costs
+        #the only difference: you cant reallocate them, they are based on the amount of purchase
 
-        start_value = self.pre_round_get_start_value(before_start_reallocate, before_start_paytax, before_start_trnsx_costs)
+        start_value, booking_value = self.pre_round_get_start_value(before_start_reallocate, before_start_trnsx_costs)
         #adjust the initial start value by all costs
-        #previous end value + reallocate + tax on negative numbers (from reallocate) - trnsx costs on positive numbers (from reallocate)
+        #previous end value + reallocate - trnsx costs on positive numbers (from reallocate)
 
-        booking_value = self.pre_round_get_booking_value(start_value) 
+        #booking_value = self.pre_round_get_booking_value(start_value) 
         #will be used to calculate taxes when selling in the next round..
         #when sales: minimum prev booking value, current start value
         #when purchase: previous booking value + reallocate + tax - trnsx costs
@@ -240,8 +256,10 @@ class Round():
             self.start_value                = start_value
             self.booking_value              = booking_value
 
-            self.main_round()
+            self.pre_round_print()
         else:
+            print("\nNOT CONFIRMED!")
+            time.sleep(2)
             self.play()
             
 
@@ -257,14 +275,11 @@ class Round():
             before_start_trnsx_costs    = get_transaction_costs(before_start_reallocate) #on each positive number flat 5%, mind 50
             if self.difficulty == 3:
                 #mode hard only:
-                before_start_paytax = get_tax_paid(before_start_reallocate) #on each negative number amount of sales - previous booking value
+                before_start_paytax = self.pre_round_get_tax_paid(before_start_reallocate) #on each negative number amount of sales - previous booking value
 
         #previous end value + reallocate + tax on negative numbers (from reallocate) - trnsx costs on positive numbers (from reallocate)
-        start_value = get_start_value(before_start_reallocate, before_start_paytax, before_start_trnsx_costs)
+        start_value, booking_value = get_start_value(before_start_reallocate, before_start_paytax, before_start_trnsx_costs)
         
-        #when sales: minimum prev booking value, current start value
-        #when purchase: previous booking value + reallocate + tax - trnsx costs
-        booking_value = get_booking_value(start_value)
 
 
     def main_round(self):
@@ -273,12 +288,158 @@ class Round():
         end_value       = []
         delta_start_end = []
 
-        performance, dividends = self.main_round_get_perf(self.round)
+        performance, dividends  = self.main_round_get_perf(self.round)
+        end_value               = self.main_round_get_endvalue(performance, dividends) #add extra steps when dividends occur: free reinvestment or pay-out to cash
+        delta_start_end         = self.main_round_get_delta(end_value, self.start_value)
+
+        self.performance    = performance
+        self.dividends      = dividends
+        self.end_value      = end_value
+        self.delta_start_end= delta_start_end
+
+        self.main_round_print()
+
+        if performance[3] > 0:
+            print(f"Congrats! Your portfolio \033[32mgrew by {performance[3]}%\033[0m (excl. costs and taxes)")
+        else:
+            print(f"Meeehhh. Your portfolio \033[31mlost {performance[3]}%\033[0m (excl. costs and taxes)")
 
 
+    def pre_round_get_reallocation(self, alloc_input):
+        list = []
+        if self.round == 1:
+            alloc_input.append(sum(alloc_input))
+            list = alloc_input
+        else:
+            end_value_previous = self.previous_round_data[f"round {self.round-1}"]["end_value"]
+            alloc_input.append(sum(alloc_input))
+            list = [a - b for a, b in zip(alloc_input, end_value_previous)]
+        return list
 
-    def get_tax_paid(self, before_start_reallocate):
-        return 0
+    def pre_round_get_tax_paid(self, before_start_reallocate):
+        list = [0]*5
+        x = 0.25
+        if self.difficulty == 2:
+            x = 0.30
+        elif self.difficulty == 3:
+            x = 0.40
+        tax = [x, x, x, x, 0]
+
+        if self.round > 1:
+            #as long as the sale amount is smaller than the previous round's book value - there are no taxes
+            #everything above book value is profit 
+            #assuming that your current market value is higher than the book value, if not, you have loss 
+            book_value_prev = self.previous_round_data[f"round {self.round-1}"]["book_value"]
+            taxable_amount = [(0 if -a-b < 0 else -a-b) for a,b in zip(before_start_reallocate, book_value_prev)] #only when book_value > sale; remember, we need positiv sales numbers thats why we make them positive with -a
+            list = [a * b for a, b in zip(taxable_amount, tax)]
+        return list
+
+
+    def pre_round_adjust_reallocation(self, before_start_reallocate, before_start_paytax):
+        sum_purchases = sum([0 if a < 0 else a for a in before_start_reallocate])
+        sum_taxes     = sum(before_start_paytax)
+        list          = []
+
+        print("\033[31mATTENTION\n\nYou sell so much that you are in a profit zone. For that, my friend, you have to pay taxes\nThe Finanzamt is very quick - you have to pay:\n\033[0m")
+        time.sleep(1)
+        print(f"In detail: {before_start_paytax} ")
+        print(f"In sum   : {sum(before_start_paytax)}€\n")
+        time.sleep(1)
+        print("This will reduce the money you can move to other securities (or bank account):")
+        print(f"before taxes:\n {sum_purchases}€\n")
+        print(f"What you actually can spend (after taxes):\n {sum_purchases-sum_taxes}\n")
+
+        while True:
+            available  = sum_purchases-sum_taxes
+            a, b, c, d = 0
+            try:
+                if before_start_reallocate[0] > 0:
+                    print(f"Enter a new purchase amount for the security \033[1;31mSAP:\033[0m")
+                    a = input(f"Enter a value between 0 and {available}")
+                    if not isinstance(a, (float, int)):
+                        raise ValueError("\033[31mInvalid. Not a number. Reallocate again.\033[0m")
+                    if a < 0 or a > available:
+                        raise ValueError(f"\033[31mInvalid. Please enter a value between 0 and {available}. Reallocate again.\033[0m")
+                    available -= a
+                
+                if before_start_reallocate[1] > 0:
+                    print(f"Enter a new purchase amount for the security \033[1;31mTESLA:\033[0m")
+                    b = input(f"Enter a value between 0 and {available}")
+                    if not isinstance(b, (float, int)):
+                        raise ValueError("\033[31mInvalid. Not a number. Reallocate again.\033[0m")
+                    if b < 0 or b > available:
+                        raise ValueError(f"\033[31mInvalid. Please enter a value between 0 and {available}. Reallocate again.\033[0m")
+                    available -= b
+
+                if before_start_reallocate[2] > 0:
+                    print(f"Enter a new purchase amount for the security \033[1;31mALIBABA:\033[0m")
+                    c = input(f"Enter a value between 0 and {available}")
+                    if not isinstance(c, (float, int)):
+                        raise ValueError("\033[31mInvalid. Not a number. Reallocate again.\033[0m")
+                    if c < 0 or c > available:
+                        raise ValueError(f"\033[31mInvalid. Please enter a value between 0 and {available}. Reallocate again.\033[0m")
+                    available -= c
+
+                if before_start_reallocate[3] > 0:
+                    print(f"Enter a new transfer amount to \033[1;31myour cash account:\033[0m")
+                    d = input(f"Enter a value between 0 and {available}")
+                    if not isinstance(d, (float, int)):
+                        raise ValueError("\033[31mInvalid. Not a number. Reallocate again.\033[0m")
+                    if d < 0 or d > available:
+                        raise ValueError(f"\033[31mInvalid. Please enter a value between 0 and {available}. Reallocate again.\033[0m")
+                    available -= d
+
+                if not round(available,2) == 0:
+                    raise ValueError(f"\033[31mThe sum of your values doesn't equal {sum_purchases-sum_taxes} ({a+b+c+d}). Reallocate again.\033[0m")
+
+            except ValueError as e:
+                print(e)
+                time.sleep(2)
+
+        list = before_start_reallocate
+        if before_start_reallocate[0] > 0:
+            list[0] = a
+        if before_start_reallocate[1] > 0:
+            list[1] = b
+        if before_start_reallocate[2] > 0:
+            list[2] = c
+        if before_start_reallocate[3] > 0:
+            list[3] = d
+        
+        return list
+
+
+    def pre_round_get_transaction_costs(self, before_start_reallocate):
+        """
+        Method that calculates 3% transaction costs on each new purchase 
+        tip: the positive values include the tax reduction already, now we adjust them for transaction costs
+        """
+        x = 0
+        if self.difficulty == 1:
+            x = 0.03
+        elif self.difficulty == 2:
+            x = 0.04
+        elif self.difficulty == 3:
+            x = 0.05
+        
+        costs_rel = [x, x, x, 0, 0]
+        costs_abs = [(0 if a < 0 else a) * b for a, b in zip(before_start_reallocate, costs_rel)]
+        return costs_abs
+
+
+    def pre_round_get_start_value(self, before_start_reallocate, before_start_trnsx_costs):
+        end_value_prev      = self.previous_round_data[f"round {self.round-1}"]["end_value"]
+        booking_value_prev  = self.previous_round_data[f"round {self.round-1}"]["booking_value"]
+
+        list_start_value   = [a + b - c for a,b,c in zip(end_value_prev, before_start_reallocate, before_start_trnsx_costs)]
+        list_booking_value = [a + b - c for a,b,c in zip(booking_value_prev, before_start_reallocate, before_start_trnsx_costs)]
+        
+        return (list_start_value, list_booking_value)
+
+
+    def main_round_get_perf(self, round):
+        
+        
 
 class SumUpError(Exception):
     pass
