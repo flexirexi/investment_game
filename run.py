@@ -124,7 +124,7 @@ class InvestmentGame():
         print("3. hard")
         while True:
             try:
-                diff_input = int(input("Enter a number (1 to 4):"))
+                diff_input = int(input("Enter a number (1 to 3):"))
                 if not isinstance(diff_input, int) or diff_input > 3 or diff_input < 1:
                     raise ValueError
                 break
@@ -141,9 +141,22 @@ class Round():
     """
     A class for a round that creates a dictionary that will be a component of the InvestmentGame's dictionary
     """
-    def __init__(self, round, previous_round_data=None):
+    def __init__(self, round, difficulty, previous_round_data=None):
         self.round = round
         self.previous_round_data = previous_round_data
+        self.difficulty = difficulty
+        
+        #dictionary content: they all consist of 4 numbers
+        self.before_start_reallocate    = []    #when player changes start values: this is the delta between last round's end value and the new start value
+        self.before_start_paytax        = []    #when player changes start values: taxes to be paid might occur when selling
+        self.before_start_trnsx_costs   = []    #when player changes start values: transaction costs might occur when buying
+        self.booking_value              = []    #all summed up pay-ins in history: not below 0; when higher than end value, then taxes might occur on the sale
+        self.start_value                = []    #the values that the player can choose at the beginning of each round and might cause costs
+        self.performance                = []    #the return of the securities (and cash)
+        self.dividends                  = []    #sometimes, dividends occur, the player can decide to re-invest for free
+        self.end_value                  = []    #the value at the end of the round, after return and dividend
+        self.delta_start_end            = []    #the monetary delta between start value and end value
+
     
     def play(self):
         print_game_header()
@@ -154,21 +167,35 @@ class Round():
             print("")
             while True:
                 try:
-                    alloc_input = split(input("Enter a number (1 to 4):"),",")
-                    if not isinstance(diff_input, int) or diff_input > 3 or diff_input < 1:
+                    alloc_input = [float(x) for x in input("4 two-digits numbers which sum up to 100 000€:").split(",")]
+                    if not round(sum(alloc_input),2) == 100000.0:
+                        raise SumUpError(f"\033[31mThe numbers don't sum up to 100 000€ (your total: {format(sum(alloc_input), ",.2f").replace(",", " ")})\033[0m")
+                    if not len(alloc_input) == 4 or not isinstance(alloc_input, list):
                         raise ValueError
+                    print(alloc_input)
                     break
                 except ValueError:
-                    delete_last_line()
-                    print("Not valid. Please enter a number between 1 and 3")
-                    time.sleep(1)
-                    delete_last_line()
+                    print("\033[31mNot valid. Please enter 4 two-digits numbers, separated by commas\033[0m")
+                    print("")
+                except SumUpError as e:
+                    print(e)
+                    print("")
             
+                time.sleep(1)
+                delete_last_line()
+            
+            if self.difficulty > 1 and :
+                #the entered data will be handled as delta, since the previous rounds data dont exist in the first round
+                
         else:
             #play any other (none-first) round:
             y=5
         return {}
-    
+
+
+class SumUpError(Exception):
+    pass
+        
 
 
 # printing functions ############################
