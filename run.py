@@ -152,6 +152,7 @@ class Round():
         self.before_start_trnsx_costs   = []    #when player changes start values: transaction costs might occur when buying
         self.booking_value              = []    #all summed up pay-ins in history: not below 0; when higher than end value, then taxes might occur on the sale
         self.start_value                = []    #the values that the player can choose at the beginning of each round and might cause costs
+        
         self.performance                = []    #the return of the securities (and cash)
         self.dividends                  = []    #sometimes, dividends occur, the player can decide to re-invest for free
         self.end_value                  = []    #the value at the end of the round, after return and dividend
@@ -184,13 +185,47 @@ class Round():
                 time.sleep(1)
                 delete_last_line()
             
-            if self.difficulty > 1 and :
-                #the entered data will be handled as delta, since the previous rounds data dont exist in the first round
-                
+            
+            #the entered data will be handled as delta, since the previous rounds data dont exist in the first round
+            self.pre_round(alloc_input)
+            self.main_round()
+
         else:
-            #play any other (none-first) round:
             y=5
+
         return {}
+    
+    def pre_round(self, alloc_input):
+        """
+        Reallocation process: This method handles everything to determine the start value, including costs and taxes 
+        """
+        before_start_reallocate     = 0
+        before_start_paytax         = 0
+        before_start_trnsx_costs    = 0
+        booking_value               = 0
+        start_value                 = 0 
+
+        if self.difficulty == 1:
+            #mode easy:
+            if self.round == 1:
+                before_start_reallocate = alloc_input
+            else:
+                before_start_reallocate = alloc_input - self.previous_round_data[f"round {self.round-1}"]["end_value"]
+        else:
+            #both modes medium and hard:
+            before_start_reallocate     = get_reallocation(alloc_input) #alloc_input - endvalue
+            before_start_trnsx_costs    = get_transaction_costs(before_start_reallocate) #on each positive number flat 5%, mind 50
+            if self.difficulty == 3:
+                #mode hard only:
+                before_start_paytax = get_tax_paid(before_start_reallocate) #on each negative number amount of sales - previous booking value
+
+        #previous end value + reallocate + tax on negative numbers (from reallocate) - trnsx costs on positive numbers (from reallocate)
+        start_value = get_start_value(before_start_reallocate, before_start_paytax, before_start_trnsx_costs)
+        
+        #when sales: minimum prev booking value, current start value
+        #when purchase: previous booking value + reallocate + tax - trnsx costs
+        booking_value = get_booking_value(start_value)
+        
 
 
 class SumUpError(Exception):
