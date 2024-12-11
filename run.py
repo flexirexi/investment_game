@@ -125,7 +125,7 @@ class InvestmentGame():
         print_into_menu("- You play 5 rounds", True, False, False, False, False)
         print_into_menu("- Each round, wou will (re)-allocate (or not) your money to 3 financial securities and, if you want, your cash account, do it wisely", True, False, False, False, False)
         print_into_menu("- Every purchase will ***cost 3% transaction costs***, so, rebalancing is expensive", True, False, False, False, False)
-        print_into_menu("- There is no interest rate on the cash account", True, False, False, False, False)
+        print_into_menu("- There is 3% interest rate on the cash account", True, False, False, False, False)
         print_into_menu("- Sometimes dividends occur, you can choose to reinvest for free or take out", True, False, False, False, False)
         print_throughout(" ", True)
 
@@ -135,6 +135,7 @@ class InvestmentGame():
         print_into_menu("- You will have to ***pay 30% taxes*** on the profits of each sale, if you make profits", True, False, False, False, False)
         print_into_menu("- whether you are in the profit zone or not depends if you sell more than you have bought/sould in sum:", True, False, False, False, False)
         print_into_menu("  100 purchase, current value 150, sale 120 -> you pay 30% on 20=6", True, False, False, False, False)
+        print_into_menu("- There is 1% interest rate on the cash account", True, False, False, False, False)
         print_into_menu("- Every purchase will ***cost 6% transaction costs***, rebalancing is even more expensive", True, False, False, False, False)
         print_throughout(" ", True)
 
@@ -143,6 +144,7 @@ class InvestmentGame():
         print_into_menu("- Everything that applies to MEDIUM, is valid here, too", True, False, False, False, False)
         print_into_menu("- You will have to ***pay 40% taxes*** on the profits of each sale, if you make profits", True, False, False, False, False)
         print_into_menu("- Every purchase will ***cost 10% transaction costs***, rebalancing is even more expensive", True, False, False, False, False)
+        print_into_menu("- There is -3% interest rate on the cash account", True, False, False, False, False)
         print_into_menu("- With that I want to see you making money :D", True, False, False, False, False)
         print_throughout(" ", True)
 
@@ -159,6 +161,55 @@ class InvestmentGame():
 
 
     def see_results(self):
+        clear_screen()
+        print("                    ", end="")
+        print_with_attention("THE INVESTMENT GAME")
+        
+        print_throughout("_", False)
+        print_into_menu("Your Results", True, True, True, True, False)
+        print_throughout("-", True)
+        
+        x = "Unknown LOL??"
+        if self.difficulty ==1:
+            x = "EASY"
+        elif self.difficulty == 2:
+            x = "MEDIUM"
+        elif self.difficulty == 3:
+            x = "HARD"
+
+        print_into_menu(f"Mode: {x}", True, True, True, False, True)
+        print_throughout(" ", True)
+        print_into_menu("Let's see how you performed ...", True, False, False, False, False)
+        time.sleep(1)
+        print_into_menu("Mhh..",True, False, False, False, False)
+        time.sleep(1)
+        print_into_menu("interesting...",True, False, False, False, False)
+        time.sleep(1)
+        print_throughout(" ", True)
+
+        message = ""
+        if self.rounds_data["round 5"]["end_value"][4] > 100000:
+            print_into_menu("Congrats! You actually performed well:", True, False, True, True, False)
+        else:
+            print_into_menu("Uff.. Maybe you should not handle money..", True, False, False, False, False)
+        print_throughout(" ", True)
+
+        print_into_menu("- You started at", True, False, False, False, False)
+        print_into_menu("100 000€", True, False, False, False, False)
+        print_throughout(" ", True)
+
+        print_into_menu("- You ended at", True, False, False, False, False)
+        print_into_menu(f"{self.rounds_data["round 5"]["end_value"][4]} €", True, False, True, False, False)
+        print_throughout(" ", True)
+
+        print_into_menu("I hope you enjoyed it!", True, True, False, False, False)
+
+        print_throughout("-", True)
+        print_throughout("_", True)
+        print("")
+        input("hit any key to continue: ")
+        clear_screen()
+
         print("see here your results")
         input("hit any key to continue: ")
 
@@ -531,11 +582,11 @@ class Round():
     def main_round_get_perf(self, round):
         secs = SHEET.worksheet("securities")
         
-        x = 0
+        x = 0.03
         if self.difficulty == 2:
             x=0.01
         if self.difficulty == 3:
-            x=0.02
+            x=-0.03
         list_perf = [
             float(secs.acell(f"F{round+1}").value.replace(",",".")), 
             float(secs.acell(f"J{round+1}").value.replace(",",".")), 
@@ -690,7 +741,7 @@ def print_game_history(round_number, rounds_data):
             rounds_data[f"round {i+1}"]["end_value"][2], 
             rounds_data[f"round {i+1}"]["end_value"][3], 
             rounds_data[f"round {i+1}"]["end_value"][4],
-            False,
+            True,
             True
         )
         print_numbertable_into_menu(
