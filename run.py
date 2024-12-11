@@ -92,21 +92,22 @@ class InvestmentGame():
         self.difficulty = self.set_difficulty()
         previous_round_data = None
         for i in range(self.ROUNDS):
-            print(f"ROUND {i+1}  ROUND {i+1}  ROUND {i+1}   ROUND {i+1}   ROUND {i+1}   ROUND {i+1}")
             time.sleep(1)
             current_round = Round(i+1, self.difficulty, previous_round_data)
             current_round_data = current_round.play()
             self.rounds_data[f"round {i+1}"] = current_round_data
 
+            clear_screen()
             print_game_header()
-            print_game_history(round, current_round_data)
+            print_game_history(i+1, self.rounds_data)
+
             ptf_return = current_round_data["end_value"][4] / current_round_data["start_value"][4] -1
             if ptf_return > 0:
                 print(f"Congrats! Your portfolio \033[32mgrew by {ptf_return*100:.2f}%\033[0m (excl. costs and taxes)")
             else:
                 print(f"Meeehhh. Your portfolio \033[31mlost {ptf_return*100:.2f}%\033[0m (excl. costs and taxes)")
             previous_round_data = current_round_data
-            input("Hit any key to continue: ")
+            input("Hit any key to play the next round: ")
         self.see_results()
 
 
@@ -128,10 +129,10 @@ class InvestmentGame():
         """
         The player choses either 'easy', 'medium' or 'hard' mode as a game difficulty
         """
-        print("\033[1mSelect a game mode: \033[0m\n")
+        print("\n\033[1mSelect a game mode: \033[0m")
         print("1. easy")
         print("2. medium")
-        print("3. hard")
+        print("3. hard\n")
         while True:
             try:
                 diff_input = int(input("Enter a number (1 to 3):"))
@@ -171,17 +172,18 @@ class Round():
 
     
     def play(self):
-        print("start play(self)")
-        print_game_header()
         alloc_input = []
 
         if self.previous_round_data == None: 
             #play the first round:
-            print("Please \033[1mallocate 100 000€ to the above 3 securities and 1 cash\033[0m.")
-            print("")
+            print("\033[1;32mPlease allocate 100 000€ to these 3 securities and 1 cash:\033[0m.")
+            print("- SAP")
+            print("- TESLA")
+            print("- IBM")
+            print("- your cash account\n")
             while True:
                 try:
-                    alloc_input = [float(x) for x in input("4 two-digits numbers which sum up to 100 000€ \n-> comma-separated: #.##,#.##,#.##,#.##\n\n").split(",")]
+                    alloc_input = [round(float(x),2) for x in input("4 two-digits numbers which sum up to 100 000.00€ \n-> format: comma-separated: #.##,#.##,#.##,#.##\n").split(",")]
                     if not round(sum(alloc_input),2) == 100000.0:
                         raise SumUpError(f"\033[31mThe numbers don't sum up to 100 000€ (your total: {format(sum(alloc_input), ",.2f").replace(",", " ")})\033[0m")
                     if not len(alloc_input) == 4 or not isinstance(alloc_input, list):
@@ -201,13 +203,12 @@ class Round():
                 delete_last_line()
         else:
             #play next round:
-            print("PLAY NEXT ROUND    NEXT ROUND")
-            ptf_value = self.previous_round_data["end_value"][4]
-            print(f"Please \033[1mallocate {ptf_value}€ to the above 3 securities and 1 cash\033[0m.")
+            ptf_value = round(self.previous_round_data["end_value"][4],2)
+            print(f"\033[1;32mPlease allocate {ptf_value}€ to the above 3 securities and 1 cash\033[0m.")
             print("")
             while True:
                 try:
-                    alloc_input = [float(x) for x in input(f"4 two-digits numbers which sum up to {ptf_value}€:").split(",")]
+                    alloc_input = [round(float(x),2) for x in input(f"4 two-digits numbers which sum up to {ptf_value}€:").split(",")]
                     if not round(sum(alloc_input),2) == ptf_value:
                         raise SumUpError(f"\033[31mThe numbers don't sum up to {ptf_value}€ (your total: {format(sum(alloc_input), ",.2f").replace(",", " ")})\033[0m")
                     if not len(alloc_input) == 4 or not isinstance(alloc_input, list):
@@ -562,11 +563,25 @@ class SumUpError(Exception):
 """
 printing functions:
 """
+def print_percenttable_into_menu(val1="", val2="", val3="", val4="", val5="", val6="", color=False):
+    c = ""
+    if color:
+        c = "\033[34m"
+
+    print(f"| {c}{val1:<12}{val2*100:>11.2f}%{val3*100:>11.2f}%{val4*100:>11.2f}%{val5*100:>11.2f}%\033[1m{val6*100:>14.2f}%\033[0m |")
+
+def print_numbertable_into_menu(val1="", val2="", val3="", val4="", val5="", val6="", color=False, bold=False):
+    c = ""
+    if color:
+        c = "\033[34m"
+    if bold:
+        b = "\033[1m"
+    print(f"| {b}{c}{val1:<12}{val2:>12,.2f}{val3:>12,.2f}{val4:>12,.2f}{val5:>12,.2f}\033[1m{val6:>15,.2f}\033[0m |".replace(","," "))
+
 def print_table_into_menu(val1="", val2="", val3="", val4="", val5="", val6="", color=False):
     c = ""
     if color:
         c = "\033[34m"
-    
     print(f"| {c}{val1:<12}{val2:>12}{val3:>12}{val4:>12}{val5:>12}\033[1m{val6:>15}\033[0m |")
 
 def print_game_header():
@@ -575,13 +590,79 @@ def print_game_header():
     print_throughout("-",True)
     print_table_into_menu("", "SAP", "TESLA", "IBM", "CASH", "TOTAL", True)
     print_throughout(" ", True)
-    print_into_menu("  ROUND 1  ", True, True, True, True, False)
-    print_throughout(" ", True)
-    print("")
 
-def print_game_history(round, rounds_data):
-    print("print game history here")
-    input("hit any key to continue: ")
+    #print("")
+
+def print_game_history(round_number, rounds_data):
+    for i in range(round_number):
+        print_into_menu(f"  ROUND {i+1}  ", True, True, True, True, False)
+        #print_throughout(" ", True)
+        print_numbertable_into_menu(
+            "trnsx costs:", 
+            rounds_data[f"round {i+1}"]["before_start_trnsx_costs"][0], 
+            rounds_data[f"round {i+1}"]["before_start_trnsx_costs"][1], 
+            rounds_data[f"round {i+1}"]["before_start_trnsx_costs"][2], 
+            rounds_data[f"round {i+1}"]["before_start_trnsx_costs"][3], 
+            rounds_data[f"round {i+1}"]["before_start_trnsx_costs"][4],
+            False
+        )
+        print_numbertable_into_menu(
+            "taxes", 
+            rounds_data[f"round {i+1}"]["before_start_paytax"][0], 
+            rounds_data[f"round {i+1}"]["before_start_paytax"][1], 
+            rounds_data[f"round {i+1}"]["before_start_paytax"][2], 
+            rounds_data[f"round {i+1}"]["before_start_paytax"][3], 
+            rounds_data[f"round {i+1}"]["before_start_paytax"][4],
+            False
+        )
+        print_throughout(" ", True)
+        print_numbertable_into_menu(
+            "start", 
+            rounds_data[f"round {i+1}"]["start_value"][0], 
+            rounds_data[f"round {i+1}"]["start_value"][1], 
+            rounds_data[f"round {i+1}"]["start_value"][2], 
+            rounds_data[f"round {i+1}"]["start_value"][3], 
+            rounds_data[f"round {i+1}"]["start_value"][4],
+            False
+        )
+        print_numbertable_into_menu(
+            "dividends", 
+            rounds_data[f"round {i+1}"]["dividends"][0], 
+            rounds_data[f"round {i+1}"]["dividends"][1], 
+            rounds_data[f"round {i+1}"]["dividends"][2], 
+            rounds_data[f"round {i+1}"]["dividends"][3], 
+            rounds_data[f"round {i+1}"]["dividends"][4],
+            False
+        )
+        print_numbertable_into_menu(
+            "end value:", 
+            rounds_data[f"round {i+1}"]["end_value"][0], 
+            rounds_data[f"round {i+1}"]["end_value"][1], 
+            rounds_data[f"round {i+1}"]["end_value"][2], 
+            rounds_data[f"round {i+1}"]["end_value"][3], 
+            rounds_data[f"round {i+1}"]["end_value"][4],
+            False,
+            True
+        )
+        print_numbertable_into_menu(
+            "delta", 
+            rounds_data[f"round {i+1}"]["delta_start_end"][0], 
+            rounds_data[f"round {i+1}"]["delta_start_end"][1], 
+            rounds_data[f"round {i+1}"]["delta_start_end"][2], 
+            rounds_data[f"round {i+1}"]["delta_start_end"][3], 
+            rounds_data[f"round {i+1}"]["delta_start_end"][4],
+            False
+        )
+        print_percenttable_into_menu(
+            "return:", 
+            rounds_data[f"round {i+1}"]["performance"][0], 
+            rounds_data[f"round {i+1}"]["performance"][1], 
+            rounds_data[f"round {i+1}"]["performance"][2], 
+            rounds_data[f"round {i+1}"]["performance"][3], 
+            rounds_data[f"round {i+1}"]["performance"][4],
+            False
+        )
+        print_throughout(" ", True)
 
 def print_with_attention(str):
     """
