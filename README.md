@@ -41,9 +41,13 @@ The hard mode is not more complex than Medium mode but more expensive. The trans
   - it uses google spreadsheet API to retrieve data from the best players 
   - the player can orientate and compete by the total portfolio value and the paid costs and taxes resp. 
   - there are 3 different lists, one per each game mode
+
   ![ranking_easy]()
+
   ![ranking_medium]()
+
   ![ranking_hard]()
+
 
 ## Reminders
 

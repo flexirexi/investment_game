@@ -528,7 +528,10 @@ class Round():
 
         while True:
             available  = sum_purchases-sum_taxes
-            a, b, c, d = 0
+            a = 0
+            b = 0
+            c = 0 
+            d = 0
             try:
                 if before_start_reallocate[0] > 0:
                     print(f"Enter a new purchase amount for the security \033[1;31mSAB:\033[0m")
