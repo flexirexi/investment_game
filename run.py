@@ -261,7 +261,7 @@ class InvestmentGame():
         
         time.sleep(3)
         print("To see the rankings, hit \033[1mranking\033[0m")
-        input_end = intput("or hit any key to go to the menu: \n")
+        input_end = input("or hit any key to go to the menu: \n")
         if input_end == "ranking":
             self.rankings()
         
