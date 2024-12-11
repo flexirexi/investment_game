@@ -163,14 +163,14 @@ class InvestmentGame():
         print("2. MEDIUM")
         print("3. HARD\n")
         while True:
-            try
+            try:
                 select_diff = int(input("\nSelect numbers from 1 to 3: "))
                 if not isinstance(select_diff, int):
                     raise ValueError
                 if select_diff > 3 or select_diff <1:
                     raise ValueError
                 break
-            except ValueError
+            except ValueError:
                 print("Invalid. Please enter a number between 1 and 3.")
             
         ranking = None
