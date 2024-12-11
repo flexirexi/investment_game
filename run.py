@@ -1,6 +1,7 @@
 import gspread
 from google.oauth2.service_account import Credentials
 import time, os, sys
+from datetime import datetime
 
 TERMINAL_WIDTH = 78
 
@@ -184,7 +185,7 @@ class InvestmentGame():
         print_into_menu("Mhh..",True, False, False, False, False)
         time.sleep(1)
         print_into_menu("interesting...",True, False, False, False, False)
-        time.sleep(1)
+        time.sleep(2)
         print_throughout(" ", True)
 
         message = ""
@@ -207,11 +208,19 @@ class InvestmentGame():
         print_throughout("-", True)
         print_throughout("_", True)
         print("")
+        time.sleep(2)
+
+        print("\033[1;31mSAFE your ranking\033[0m")
+        rank_name = input("ENTER YOUR NAME:")
+        tax_paid = sum(self.rounds_data["round 5"]["before_start_paytax"]) + sum(self.rounds_data["round 4"]["before_start_paytax"]) + sum(self.rounds_data["round 3"]["before_start_paytax"]) + sum(self.rounds_data["round 2"]["before_start_paytax"]) + sum(self.rounds_data["round 1"]["before_start_paytax"]) 
+        trnx_costs = sum(self.rounds_data["round 5"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 4"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 3"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 2"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 1"]["before_start_trnsx_costs"]) 
+        ptf_value = round(self.rounds_data["round 5"]["end_value"][4],2)
+        self.safe_score(self.difficulty, rank_name, tax_paid, trnx_costs, ptf_value)
+
+        time.sleep(3)
         input("hit any key to continue: ")
         clear_screen()
 
-        print("see here your results")
-        input("hit any key to continue: ")
 
     def set_difficulty(self):
         """
@@ -236,6 +245,15 @@ class InvestmentGame():
         print("\033c", end="")
         return diff_input
 
+    def safe_score(self, diff, rank_name, tax_paid, trnx_costs, ptf_value):
+        x = datetime.now().strftime("%Y-%m-%d %H:%M")
+        if diff == 1:
+            ranking = SHEET.worksheet("ranking_easy")
+            ranking.append_row([x, rank_name, round(ptf_value,2)])
+        if diff == 2:
+            ranking = SHEET.worksheet("ranking_medium")
+        if diff == 3:
+            ranking = SHEET.worksheet("ranking_hard")
 
 class Round():
     """
@@ -265,9 +283,9 @@ class Round():
         if self.previous_round_data == None: 
             #play the first round:
             print("\033[1;32mPlease allocate 100 000€ to these 3 securities and 1 cash:\033[0m.")
-            print("- SAP")
-            print("- TESLA")
-            print("- IBM")
+            print("- SAB")
+            print("- TESIA")
+            print("- IBN")
             print("- your cash account\n")
             while True:
                 try:
@@ -465,7 +483,7 @@ class Round():
             a, b, c, d = 0
             try:
                 if before_start_reallocate[0] > 0:
-                    print(f"Enter a new purchase amount for the security \033[1;31mSAP:\033[0m")
+                    print(f"Enter a new purchase amount for the security \033[1;31mSAB:\033[0m")
                     a = input(f"Enter a value between 0 and {available}")
                     if not isinstance(a, (float, int)):
                         raise ValueError("\033[31mInvalid. Not a number. Reallocate again.\033[0m")
@@ -474,7 +492,7 @@ class Round():
                     available -= a
                 
                 if before_start_reallocate[1] > 0:
-                    print(f"Enter a new purchase amount for the security \033[1;31mTESLA:\033[0m")
+                    print(f"Enter a new purchase amount for the security \033[1;31mTESIA:\033[0m")
                     b = input(f"Enter a value between 0 and {available}")
                     if not isinstance(b, (float, int)):
                         raise ValueError("\033[31mInvalid. Not a number. Reallocate again.\033[0m")
@@ -611,9 +629,9 @@ class Round():
         if not dividends[0]==0 and not dividends[0]*end_value[0] == 0:
             print("\033[31;1mDividends\033[0m")
             time.sleep(1)
-            print(f"At the end of this period, \033[1mSAP\033[0m paid distributions to its investors. You \033[33received {dividends[0]*100:.2f}%\033[0m equal to {dividends[0]*end_value[0]:.2f}€.\n")
+            print(f"At the end of this period, \033[1mSAB\033[0m paid distributions to its investors. You \033[33received {dividends[0]*100:.2f}%\033[0m equal to {dividends[0]*end_value[0]:.2f}€.\n")
             print("\033[1mOptions:\033[0m")
-            print("1. Re-invest into SAP for free.")
+            print("1. Re-invest into SAB for free.")
             print("2. Transfer the dividends to your cash account.")
 
             x = input_option(2)
@@ -624,7 +642,7 @@ class Round():
         if not dividends[1]==0 and not dividends[1]*end_value[1] == 0:
             print("\033[31;1Dividends\033[0m")
             time.sleep(1)
-            print(f"At the end of this period, \033[1mTESLA\033[0m paid distributions to its investors. You \033[33received {dividends[1]*100:.2f}%\033[0m equal to {dividends[1]*end_value[1]:.2f}€.\n")
+            print(f"At the end of this period, \033[1mTESIA\033[0m paid distributions to its investors. You \033[33received {dividends[1]*100:.2f}%\033[0m equal to {dividends[1]*end_value[1]:.2f}€.\n")
             print("\033[1mOptions:\033[0m")
             print("1. Re-invest the dividends for free (let it in).")
             print("2. Transfer the dividends to your cash account (take it out).")
@@ -637,7 +655,7 @@ class Round():
         if not dividends[2]==0 and not dividends[1]*end_value[1] == 0:
             print("\033[31;1Dividends\033[0m")
             time.sleep(1)
-            print(f"At the end of this period, \033[1mIBM\033[0m paid distributions to its investors. You \033[33received {dividends[2]*100:.2f}%\033[0m equal to {dividends[2]*end_value[2]:.2f}€.\n")
+            print(f"At the end of this period, \033[1mIBN\033[0m paid distributions to its investors. You \033[33received {dividends[2]*100:.2f}%\033[0m equal to {dividends[2]*end_value[2]:.2f}€.\n")
             print("\033[1mOptions:\033[0m")
             print("1. Re-invest the dividends for free (let it in).")
             print("2. Transfer the dividends to your cash account (take it out).")
@@ -688,7 +706,7 @@ def print_game_header():
     print_throughout("_", False)
     print_into_menu("YOUR PORTFOLIO", True, True, True, False, False)
     print_throughout("-",True)
-    print_table_into_menu("", "SAP", "TESLA", "IBM", "CASH", "TOTAL", True)
+    print_table_into_menu("", "SAB", "TESIA", "IBN", "CASH", "TOTAL", True)
     print_throughout(" ", True)
 
     #print("")
