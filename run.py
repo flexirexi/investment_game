@@ -162,6 +162,29 @@ class InvestmentGame():
 
 
     def see_results(self):
+        print("\033[1;31mSAFE your ranking\033[0m")
+        time.sleep(0.5)
+        rank_name = input("ENTER YOUR NAME:")
+        
+        tax_paid = sum(self.rounds_data["round 5"]["before_start_paytax"]) + sum(self.rounds_data["round 4"]["before_start_paytax"]) + sum(self.rounds_data["round 3"]["before_start_paytax"]) + sum(self.rounds_data["round 2"]["before_start_paytax"]) + sum(self.rounds_data["round 1"]["before_start_paytax"]) 
+        trnx_costs = sum(self.rounds_data["round 5"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 4"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 3"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 2"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 1"]["before_start_trnsx_costs"]) 
+        ptf_value = round(self.rounds_data["round 5"]["end_value"][4],2)
+        
+        x = "Unknown LOL??"
+        ranking = None
+        if self.difficulty == 1:
+            x = "EASY"
+            ranking = SHEET.worksheet("ranking_easy")
+            ranking.append_row([x, rank_name, round(ptf_value,2)])
+        if self.difficulty == 2:
+            x = "MEDIUM"
+            ranking = SHEET.worksheet("ranking_medium")
+            ranking.append_row([x, rank_name, round(ptf_value,2),round(trnx_costs,2)])
+        if self.difficulty == 3:
+            x = "HARD"
+            ranking = SHEET.worksheet("ranking_hard")
+            ranking.append_row([x, rank_name, round(ptf_value,2),round(trnx_costs,2), round(tax_paid,2)])
+
         clear_screen()
         print("                    ", end="")
         print_with_attention("THE INVESTMENT GAME")
@@ -169,14 +192,6 @@ class InvestmentGame():
         print_throughout("_", False)
         print_into_menu("Your Results", True, True, True, True, False)
         print_throughout("-", True)
-        
-        x = "Unknown LOL??"
-        if self.difficulty ==1:
-            x = "EASY"
-        elif self.difficulty == 2:
-            x = "MEDIUM"
-        elif self.difficulty == 3:
-            x = "HARD"
 
         print_into_menu(f"Mode: {x}", True, True, True, False, True)
         print_throughout(" ", True)
@@ -210,13 +225,8 @@ class InvestmentGame():
         print("")
         time.sleep(2)
 
-        print("\033[1;31mSAFE your ranking\033[0m")
-        rank_name = input("ENTER YOUR NAME:")
-        tax_paid = sum(self.rounds_data["round 5"]["before_start_paytax"]) + sum(self.rounds_data["round 4"]["before_start_paytax"]) + sum(self.rounds_data["round 3"]["before_start_paytax"]) + sum(self.rounds_data["round 2"]["before_start_paytax"]) + sum(self.rounds_data["round 1"]["before_start_paytax"]) 
-        trnx_costs = sum(self.rounds_data["round 5"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 4"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 3"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 2"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 1"]["before_start_trnsx_costs"]) 
-        ptf_value = round(self.rounds_data["round 5"]["end_value"][4],2)
-        self.safe_score(self.difficulty, rank_name, tax_paid, trnx_costs, ptf_value)
-
+        
+        
         time.sleep(3)
         input("hit any key to continue: ")
         clear_screen()
@@ -252,9 +262,11 @@ class InvestmentGame():
             ranking.append_row([x, rank_name, round(ptf_value,2)])
         if diff == 2:
             ranking = SHEET.worksheet("ranking_medium")
+            ranking.append_row([x, rank_name, round(ptf_value,2),round(trnx_costs,2)])
         if diff == 3:
             ranking = SHEET.worksheet("ranking_hard")
-
+            ranking.append_row([x, rank_name, round(ptf_value,2),round(trnx_costs,2), round(tax_paid,2)])
+        
 class Round():
     """
     A class for a round that creates a dictionary that will be a component of the InvestmentGame's dictionary
