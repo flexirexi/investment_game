@@ -157,6 +157,32 @@ class InvestmentGame():
 
     
     def rankings(self):
+        worksheet.sort_range(f'A1:D{anzahl_zeilen}', base_column_index=sort_column, sort_order=sort_order)
+        print("\n\033[1mWhich ranking you want to see?\033[0m")
+        print("1. EASY")
+        print("2. MEDIUM")
+        print("3. HARD\n")
+        while True:
+            try
+                select_diff = int(input("\nSelect numbers from 1 to 3: "))
+                if not isinstance(select_diff, int):
+                    raise ValueError
+                if select_diff > 3 or select_diff <1:
+                    raise ValueError
+                break
+            except ValueError
+                print("Invalid. Please enter a number between 1 and 3.")
+            
+        ranking = None
+        if select_diff == 1:
+            x = "EASY"
+            ranking = SHEET.worksheet("ranking_easy")
+        if select_diff == 2:
+            x = "MEDIUM"
+            ranking = SHEET.worksheet("ranking_medium")
+        if select_diff == 3:
+            x = "HARD"
+            ranking = SHEET.worksheet("ranking_hard")
         print("select the difficulty for which you want to see the ranking..")
         input("hit any key to continue: ")
 
@@ -223,12 +249,16 @@ class InvestmentGame():
         print_throughout("-", True)
         print_throughout("_", True)
         print("")
-        time.sleep(2)
 
         
         
         time.sleep(3)
-        input("hit any key to continue: ")
+        print("To see the rankings, hit \033[1mranking\033[0m")
+        print("or hit any key to go to the menu: \n")
+        input_end = intput(" ")
+        if input_end == "ranking":
+            self.rankings()
+        
         clear_screen()
 
 
@@ -638,7 +668,7 @@ class Round():
         end_value = [a * (1 +b) for a,b in zip(self.start_value, performance)]
         into_cash = 0
         clear_screen()
-        
+
         if not dividends[0]==0 and not dividends[0]*end_value[0] == 0:
             print("\033[31;1mDividends\033[0m")
             time.sleep(1)
