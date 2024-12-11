@@ -47,11 +47,8 @@ The hard mode is not more complex than Medium mode but more expensive. The trans
   - the player can orientate and compete by the total portfolio value and the paid costs and taxes resp. 
   - there are 3 different lists, one per each game mode
 
-  ![ranking_easy]()
+  ![ranking_medium](images/ranking.png)
 
-  ![ranking_medium]()
-
-  ![ranking_hard]()
 
 - **the game board**
   - probably the most useful board
@@ -60,7 +57,7 @@ The hard mode is not more complex than Medium mode but more expensive. The trans
   - more important numbers are emphasised, less important (if you even can name them like that) are plain in white
   - this board will be reloaded after each round and presented on a cleared screen
 
-  ![game_board]()
+  ![game_board](images/game_board.png)
 
 # Data Model
 The model of this project is object oriented, although the board printing functions can be seen as extensions/tools. Each game to be played is an own class. All the necessary settings and up-to-date game data are organized there. This includes the start menu, rules board, rankings boards as well as the actual start of the game.

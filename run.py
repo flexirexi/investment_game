@@ -512,6 +512,7 @@ class Round():
                     if d < 0-available*0.05 or d > available*1.05:
                         raise ValueError(f"\033[31mInvalid. Please enter a value between 0 and {available}. Reallocate again.\033[0m")
                     available -= d
+                break
             except ValueError as e:
                 print(e)
                 time.sleep(2)
@@ -566,10 +567,10 @@ class Round():
                 print(f"You will pay transaction costs (for purchases): \n{before_start_trnsx_costs}   in sum: {sum(before_start_trnsx_costs)}\n")
 
                 x = input("Please confirm to play this round (Y/N): ")
-                if x == "Y":
+                if x == "Y" or x == "y":
                     return True
                     break
-                if x == "N":
+                if x == "N" or x == "n":
                     return False
                     break
                 else:
