@@ -157,8 +157,9 @@ class InvestmentGame():
 
     
     def rankings(self):
-        worksheet.sort_range(f'A1:D{anzahl_zeilen}', base_column_index=sort_column, sort_order=sort_order)
-        print("\n\033[1mWhich ranking you want to see?\033[0m")
+        clear_screen()
+        time.sleep(0.5)
+        print("\033[1mWhich ranking you want to see?\033[0m")
         print("1. EASY")
         print("2. MEDIUM")
         print("3. HARD\n")
@@ -172,6 +173,8 @@ class InvestmentGame():
                 break
             except ValueError:
                 print("Invalid. Please enter a number between 1 and 3.")
+                time.sleep(1)
+                delete_last_line()
             
         ranking = None
         if select_diff == 1:
@@ -183,7 +186,11 @@ class InvestmentGame():
         if select_diff == 3:
             x = "HARD"
             ranking = SHEET.worksheet("ranking_hard")
-        print("select the difficulty for which you want to see the ranking..")
+        
+        clear_screen()
+        ranking.sort((3, "des"))
+        data = ranking.get_all_values()
+        print_ranking(2+select_diff, data)
         input("hit any key to continue: ")
 
 
@@ -191,7 +198,7 @@ class InvestmentGame():
         print("\033[1;31mSAFE your ranking\033[0m")
         time.sleep(0.5)
         rank_name = input("ENTER YOUR NAME:")
-
+        rank_date = datetime(2024, 12, 10, 15, 30)
         tax_paid = sum(self.rounds_data["round 5"]["before_start_paytax"]) + sum(self.rounds_data["round 4"]["before_start_paytax"]) + sum(self.rounds_data["round 3"]["before_start_paytax"]) + sum(self.rounds_data["round 2"]["before_start_paytax"]) + sum(self.rounds_data["round 1"]["before_start_paytax"]) 
         trnx_costs = sum(self.rounds_data["round 5"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 4"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 3"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 2"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 1"]["before_start_trnsx_costs"]) 
         ptf_value = round(self.rounds_data["round 5"]["end_value"][4],2)
@@ -201,11 +208,11 @@ class InvestmentGame():
         if self.difficulty == 1:
             x = "EASY"
             ranking = SHEET.worksheet("ranking_easy")
-            ranking.append_row([x, rank_name, round(ptf_value,2)])
+            ranking.append_row([rank_date, rank_name, round(ptf_value,2)])
         if self.difficulty == 2:
             x = "MEDIUM"
             ranking = SHEET.worksheet("ranking_medium")
-            ranking.append_row([x, rank_name, round(ptf_value,2),round(trnx_costs,2)])
+            ranking.append_row([rank_date, rank_name, round(ptf_value,2),round(trnx_costs,2)])
         if self.difficulty == 3:
             x = "HARD"
             ranking = SHEET.worksheet("ranking_hard")
@@ -254,8 +261,7 @@ class InvestmentGame():
         
         time.sleep(3)
         print("To see the rankings, hit \033[1mranking\033[0m")
-        print("or hit any key to go to the menu: \n")
-        input_end = intput(" ")
+        input_end = intput("or hit any key to go to the menu: \n")
         if input_end == "ranking":
             self.rankings()
         
@@ -723,6 +729,31 @@ class SumUpError(Exception):
 """
 printing functions:
 """
+def print_ranking(cols, data):
+    for i in range(len(data)):
+        if i ==0:
+            print_into_ranking(data[i], True, True)
+        elif i >100:
+            break
+        else:
+            print_into_ranking(data[i], False, False)
+
+def print_into_ranking(values, bold, color):
+    string = ""
+    c      = ""
+    b      = ""
+    if color:
+        c = "\033[34m"
+    if bold:
+        b = "\033[1m"
+
+    string = f"| {c}{b}"
+    for i in values:
+        string += f"{i:>15}"
+    string += "\033[0m |" 
+
+    print(string)
+
 def print_percenttable_into_menu(val1="", val2="", val3="", val4="", val5="", val6="", color=False):
     c = ""
     if color:
