@@ -57,7 +57,7 @@ The hard mode is not more complex than Medium mode but more expensive. The trans
   - more important numbers are emphasised, less important (if you even can name them like that) are plain in white
   - this board will be reloaded after each round and presented on a cleared screen
 
-  ![game_board](images/game_board.png)
+  ![game_board](images/game_board2.png)
 
 # Data Model
 The model of this project is object oriented, although the board printing functions can be seen as extensions/tools. Each game to be played is an own class. All the necessary settings and up-to-date game data are organized there. This includes the start menu, rules board, rankings boards as well as the actual start of the game.
