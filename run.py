@@ -165,7 +165,7 @@ class InvestmentGame():
         print("\033[1;31mSAFE your ranking\033[0m")
         time.sleep(0.5)
         rank_name = input("ENTER YOUR NAME:")
-        
+
         tax_paid = sum(self.rounds_data["round 5"]["before_start_paytax"]) + sum(self.rounds_data["round 4"]["before_start_paytax"]) + sum(self.rounds_data["round 3"]["before_start_paytax"]) + sum(self.rounds_data["round 2"]["before_start_paytax"]) + sum(self.rounds_data["round 1"]["before_start_paytax"]) 
         trnx_costs = sum(self.rounds_data["round 5"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 4"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 3"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 2"]["before_start_trnsx_costs"]) + sum(self.rounds_data["round 1"]["before_start_trnsx_costs"]) 
         ptf_value = round(self.rounds_data["round 5"]["end_value"][4],2)
@@ -637,7 +637,8 @@ class Round():
     def main_round_get_endvalue(self, performance, dividends):
         end_value = [a * (1 +b) for a,b in zip(self.start_value, performance)]
         into_cash = 0
-
+        clear_screen()
+        
         if not dividends[0]==0 and not dividends[0]*end_value[0] == 0:
             print("\033[31;1mDividends\033[0m")
             time.sleep(1)
