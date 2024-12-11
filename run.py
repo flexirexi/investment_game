@@ -116,47 +116,41 @@ class InvestmentGame():
         print_with_attention("THE INVESTMENT GAME")
         
         print_throughout("_", False)
-        print_into_menu("THE RULES", True, True, True, False, False)
+        print_into_menu("THE RULES", True, True, True, True, False)
         print_throughout("-", True)
         
-        print_into_menu("Mode: \033[1mEASY\033[0m", True, False, False, False, False)
+        print_into_menu("Mode: EASY", True, True, True, False, True)
         print_throughout(" ", True)
         print_into_menu("- You will have 100 000€ at the beginning of the game", True, False, False, False, False)
         print_into_menu("- You play 5 rounds", True, False, False, False, False)
-        print_into_menu("- Each round, you can re-allocate your money, do it wisely", True, False, False, False, False)
-        print_into_menu("- Every purchase will cost 3% transaction costs, so, rebalancing is expensive", True, False, False, False, False)
+        print_into_menu("- Each round, wou will (re)-allocate (or not) your money to 3 financial securities and, if you want, your cash account, do it wisely", True, False, False, False, False)
+        print_into_menu("- Every purchase will ***cost 3% transaction costs***, so, rebalancing is expensive", True, False, False, False, False)
         print_into_menu("- There is no interest rate on the cash account", True, False, False, False, False)
         print_into_menu("- Sometimes dividends occur, you can choose to reinvest for free or take out", True, False, False, False, False)
         print_throughout(" ", True)
 
-        print_into_menu("Mode: \033[1mMEDIUM\033[0m", True, False, False, False, False)
+        print_into_menu("Mode: MEDIUM", True, True, True, False, True)
         print_throughout(" ", True)
         print_into_menu("- Everything that applies to EASY, is valid here, too", True, False, False, False, False)
-        print_into_menu("- You will have to \033[1mpay 30% taxes\033[0m on the profits of each sale, \033[1mif you make profits\033[0m", True, False, False, False, False)
+        print_into_menu("- You will have to ***pay 30% taxes*** on the profits of each sale, if you make profits", True, False, False, False, False)
         print_into_menu("- whether you are in the profit zone or not depends if you sell more than you have bought/sould in sum:", True, False, False, False, False)
         print_into_menu("  100 purchase, current value 150, sale 120 -> you pay 30% on 20=6", True, False, False, False, False)
-        print_into_menu("- Every purchase will cost 6% transaction costs, rebalancing is even more expensive", True, False, False, False, False)
+        print_into_menu("- Every purchase will ***cost 6% transaction costs***, rebalancing is even more expensive", True, False, False, False, False)
         print_throughout(" ", True)
 
-        print_into_menu("Mode: \033[1mHARD\033[0m", True, False, False, False, False)
+        print_into_menu("Mode: HARD", True, True, True, False, True)
         print_throughout(" ", True)
         print_into_menu("- Everything that applies to MEDIUM, is valid here, too", True, False, False, False, False)
-        print_into_menu("- You will have to \033[1mpay 40% taxes\033[0m on the profits of each sale, \033[1mif you make profits\033[0m", True, False, False, False, False)
-        print_into_menu("- Every purchase will cost 10% transaction costs, rebalancing is even more expensive", True, False, False, False, False)
+        print_into_menu("- You will have to ***pay 40% taxes*** on the profits of each sale, if you make profits", True, False, False, False, False)
+        print_into_menu("- Every purchase will ***cost 10% transaction costs***, rebalancing is even more expensive", True, False, False, False, False)
         print_into_menu("- With that I want to see you making money :D", True, False, False, False, False)
         print_throughout(" ", True)
 
         print_throughout("-", True)
-        print_into_menu("Enter a number:", True, False, True, False, False)
-        print_throughout(" ", True)
-        print_into_menu("1. start", True, False, True, False, False)
-        print_into_menu("2. rules", True, False, False, False, False)
-        print_into_menu("3. rankings", True, False, False, False, False)
-        print_into_menu("4. exit game", True, False, False, False, False)
         print_throughout("_", True)
         print("")
-        print("rules:(highlight the play mode if the user has already selected one)")
         input("hit any key to continue: ")
+        clear_screen()
 
     
     def rankings(self):
@@ -339,8 +333,8 @@ class Round():
             self.pre_round_print()
         else:
             print("\nNOT CONFIRMED!")
-            time.sleep(2)
-            #self.play()
+            time.sleep(1)
+            self.play()
 
 
 
@@ -574,6 +568,7 @@ class Round():
             x = input_option(2)
             #if x==1: #reinvest: do nothing because the performance includes the dividends
             end_value[0] = (1 - dividends[0]) * end_value[0] if x == 2 else end_value[0]
+            end_value[3] += dividends[0] * end_value[0] 
         
         if not dividends[1]==0 and not dividends[1]*end_value[1] == 0:
             print("\033[31;1Dividends\033[0m")
@@ -586,6 +581,7 @@ class Round():
             x = input_option(2)
             #if x==1: #reinvest: do nothing because the performance includes the dividends
             end_value[1] = (1 - dividends[1]) * end_value[1] if x == 2 else end_value[1]
+            end_value[3] += dividends[0] * end_value[0] 
 
         if not dividends[2]==0 and not dividends[1]*end_value[1] == 0:
             print("\033[31;1Dividends\033[0m")
@@ -598,6 +594,7 @@ class Round():
             x = input_option(2)
             #if x==1: #reinvest: do nothing because the performance includes the dividends
             end_value[2] = (1 - dividends[2]) * end_value[2] if x == 2 else end_value[2]
+            end_value[3] += dividends[0] * end_value[0] 
 
         return end_value
 
@@ -677,7 +674,7 @@ def print_game_history(round_number, rounds_data):
             rounds_data[f"round {i+1}"]["start_value"][4],
             False
         )
-        print_numbertable_into_menu(
+        print_percenttable_into_menu(
             "dividends", 
             rounds_data[f"round {i+1}"]["dividends"][0], 
             rounds_data[f"round {i+1}"]["dividends"][1], 
