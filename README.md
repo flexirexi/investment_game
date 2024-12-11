@@ -91,7 +91,7 @@ another class, the round class, is composed into the InvestmentGame class. It do
 ## Validator Testing
 - there are whitespaces and too long lines
 
-![pep8 validator]()
+![pep8 validator](images/pep8.png)
 
 # Deployment
 This project was deployed using Code Institute's mock terminal for Heroku.

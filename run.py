@@ -457,6 +457,7 @@ class Round():
         print(f"before taxes:\n {sum_purchases}€\n")
         print(f"the tax amount\n {sum_taxes}\n")
         print(f"What you actually can spend (after taxes):\n {sum_purchases-sum_taxes}\n")
+        input("Take your time to check. Hit any key to continue.")
         while True:
             available  = sum_purchases-sum_taxes
             a = 0
