@@ -45,7 +45,7 @@ class InvestmentGame():
         
         print_into_menu("Welcome to the investment game!", True, False, False, False, False)
         print_throughout(" ", True)
-        print_into_menu(f"You have a portfolio of 3 securities and one cash account. You have to allocate {self.ptf_amount:.2f}€ to them, at the beginning of the game. You will play 5 rounds. Each round you can re-allocate your money and see how it gains profits! But be careful there are costs - Please read the rules! At the end, your final portfolio value will be ranked amongst other players. Are you be the best investor?", 
+        print_into_menu(f"You have a portfolio of 3 securities and one cash account. You have to allocate {self.ptf_amount:.2f}€ to them, at the beginning of the game. You will play 5 rounds. Each round you can re-allocate your money and see how it gains profits! But be careful there are costs - Please read the rules! At the end, your final portfolio value will be ranked amongst other players. Are you the best investor?", 
             True, False, False, False, False)
         print_throughout("-", True)
         print_into_menu("Enter a number:", True, False, True, False, False)
@@ -55,6 +55,7 @@ class InvestmentGame():
         print_into_menu("3. rankings", True, False, False, False, False)
         print_into_menu("4. exit game", True, False, False, False, False)
         print_throughout("_", True)
+        print("")
 
         while True:
             try:
@@ -159,7 +160,7 @@ class Round():
     def play(self):
         print_game_header()
         alloc_input = []
-        
+
         if self.previous_round_data == None: 
             #play the first round:
             print("Please \033[1mallocate 100 000€ to the above 3 securities and 1 cash\033[0m.")
@@ -231,9 +232,9 @@ class Round():
         before_start_trnsx_costs    = []
         booking_value               = []
         start_value                 = [] 
-        alloc_input2                = [] #when selling, taxes might occur->it reduces the money to be allocated, but which purchase to reduce?? the player must decide again
+        #alloc_input2                = [] #when selling, taxes might occur->it reduces the money to be allocated, but which purchase to reduce?? the player must decide again
 
-        before_start_reallocate = self.pre_round_get_reallocation(alloc_input) 
+        before_start_reallocate = self.pre_round_get_reallocation(alloc_input)
         #get hypothetical delta (gross amount), no extra inputs here
 
         before_start_paytax = self.pre_round_get_tax_paid(before_start_reallocate) 
@@ -245,6 +246,7 @@ class Round():
             before_start_reallocate = self.pre_round_adjust_reallocation(before_start_reallocate, before_start_paytax)
 
         before_start_trnsx_costs = self.pre_round_get_transaction_costs(before_start_reallocate) 
+        print(f"first trnsx costs:  {before_start_trnsx_costs}") 
         #get hypothetical transaction costs on positive reallocation numbers (after taxes)
         #the positive numbers, now, will be charged by transaction costs
         #the only difference: you cant reallocate them, they are based on the amount of purchase
@@ -255,11 +257,11 @@ class Round():
 
         confirmation = False
         confirmation = self.pre_round_confirmation(
-            alloc_input, 
             before_start_trnsx_costs, 
             before_start_paytax,
             start_value,
-            booking_value)
+            booking_value
+        )
 
         if confirmation:
             self.before_start_reallocate    = before_start_reallocate
@@ -423,13 +425,36 @@ class Round():
 
 
     def pre_round_get_start_value(self, before_start_reallocate, before_start_trnsx_costs):
-        end_value_prev      = self.previous_round_data[f"round {self.round-1}"]["end_value"]
-        booking_value_prev  = self.previous_round_data[f"round {self.round-1}"]["booking_value"]
+        end_value_prev      = [0]*5
+        booking_value_prev  = [0]*5
+        if not self.previous_round_data == None:
+            end_value_prev      = self.previous_round_data["end_value"]
+            booking_value_prev  = self.previous_round_data["booking_value"]
 
         list_start_value   = [a + b - c for a,b,c in zip(end_value_prev, before_start_reallocate, before_start_trnsx_costs)]
         list_booking_value = [a + b - c for a,b,c in zip(booking_value_prev, before_start_reallocate, before_start_trnsx_costs)]
         
         return (list_start_value, list_booking_value)
+
+
+    def pre_round_confirmation(self, before_start_trnsx_costs, before_start_paytax, start_value, booking_value):
+        while True:
+            try:
+                time.sleep(1)
+                print("\n\n\033[33;1mPlease Confirm:\033[0m\n")
+                print(f"\033[1mYou will allocate to the following positions: \n{start_value}\033[0m\n")
+                print(f"You will pay taxes as follows: \n{before_start_paytax}   in sum: {sum(before_start_paytax)}\n")
+                print(f"You will pay transaction costs (for purchases): \n{before_start_trnsx_costs}   in sum: {sum(before_start_trnsx_costs)}\n")
+
+                x = input("Please confirm to play this round (Y/N): ")
+                if x == "Y":
+                    return True
+                if x == "N":
+                    return False
+                else:
+                    raise ValueError
+            except ValueError:
+                print("Invalid. Please Enter 'Y' to confirm and 'N' to start over the this round")
 
 
     def main_round_get_perf(self, round):
@@ -532,7 +557,7 @@ def print_game_header():
     print_table_into_menu("", "SAP", "TESLA", "IBM", "CASH", "TOTAL", True)
     print_throughout(" ", True)
     #print_into_menu("  ROUND 1  ", True, True, True, True, False)
-    #print("")
+    print("")
 
 def print_game_history(round, rounds_data):
     print("print game history here")
@@ -544,9 +569,9 @@ def print_with_attention(str):
     """
     for i in str:
         print(f"\033[1;47;30m{i}\033[0m", end="\033[47;30m \033[0m")
-        time.sleep(0.15)
+        time.sleep(0.1)
 
-    time.sleep(0.5)
+    time.sleep(0.2)
     print("\n")
 
 def print_throughout(char, with_border):
