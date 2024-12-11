@@ -470,7 +470,7 @@ class Round():
                         a = available
                         break
                     print(f"Enter a new purchase amount for the security \033[1;31mSAB:\033[0m")
-                    a = input(f"Enter a value between 0 and {available}")
+                    a = float(input(f"Enter a value between 0 and {available}"))
                     if not isinstance(a, (float, int)):
                         raise ValueError("\033[31mInvalid. Not a number. Reallocate again.\033[0m")
                     if a < 0-available*0.05 or a > available*1.05:
@@ -482,7 +482,7 @@ class Round():
                         b = available
                         break
                     print(f"Enter a new purchase amount for the security \033[1;31mTESIA:\033[0m")
-                    b = input(f"Enter a value between 0 and {available}")
+                    b = float(input(f"Enter a value between 0 and {available}"))
                     if not isinstance(b, (float, int)):
                         raise ValueError("\033[31mInvalid. Not a number. Reallocate again.\033[0m")
                     if b < 0-available*0.05 or b > available*1.05:
@@ -494,7 +494,7 @@ class Round():
                         c = available
                         break
                     print(f"Enter a new purchase amount for the security \033[1;31mIBN:\033[0m")
-                    c = input(f"Enter a value between 0 and {available}")
+                    c = float(input(f"Enter a value between 0 and {available}"))
                     if not isinstance(c, (float, int)):
                         raise ValueError("\033[31mInvalid. Not a number. Reallocate again.\033[0m")
                     if c < 0-available*0.05 or c > available*1.05:
@@ -506,7 +506,7 @@ class Round():
                         d = available
                         break
                     print(f"Enter a new transfer amount to \033[1;31myour cash account:\033[0m")
-                    d = input(f"Enter a value between 0 and {available}")
+                    d = float(input(f"Enter a value between 0 and {available}"))
                     if not isinstance(d, (float, int)):
                         raise ValueError("\033[31mInvalid. Not a number. Reallocate again.\033[0m")
                     if d < 0-available*0.05 or d > available*1.05:
