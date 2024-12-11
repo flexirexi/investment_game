@@ -15,8 +15,9 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open("investment_game")
 
-secs = SHEET.worksheet("securities")
-data = secs.get_all_values()
+#secs = SHEET.worksheet("securities")
+#data = secs.get_all_values()
+
 
 class InvestmentGame():
     """
@@ -59,12 +60,13 @@ class InvestmentGame():
 
         while True:
             try:
-                menu_input = int(input("Enter a number (1 to 4):"))
+                menu_input = int(input("Menu: Enter a number (1 to 4):"))
 
                 if not isinstance(menu_input, int) or menu_input > 4 or menu_input < 1:
                     raise ValueError
                 if menu_input == 1:
                     self.start()
+                    break
                 elif menu_input == 2:
                     self.rules()
                 elif menu_input == 3:
@@ -90,9 +92,19 @@ class InvestmentGame():
         self.difficulty = self.set_difficulty()
         previous_round_data = None
         for i in range(self.ROUNDS):
-            current_round = Round(i+1, previous_round_data)
+            print(f"ROUND {i+1}  ROUND {i+1}  ROUND {i+1}   ROUND {i+1}   ROUND {i+1}   ROUND {i+1}")
+            time.sleep(1)
+            current_round = Round(i+1, self.difficulty, previous_round_data)
             current_round_data = current_round.play()
             self.rounds_data[f"round {i+1}"] = current_round_data
+
+            print_game_header()
+            print_game_history(round, current_round_data)
+            ptf_return = current_round_data["end_value"][4] / current_round_data["start_value"][4] -1
+            if ptf_return > 0:
+                print(f"Congrats! Your portfolio \033[32mgrew by {ptf_return*100:.2f}%\033[0m (excl. costs and taxes)")
+            else:
+                print(f"Meeehhh. Your portfolio \033[31mlost {ptf_return*100:.2f}%\033[0m (excl. costs and taxes)")
             previous_round_data = current_round_data
             input("Hit any key to continue: ")
         self.see_results()
@@ -131,7 +143,8 @@ class InvestmentGame():
                 print("Not valid. Please enter a number between 1 and 3")
                 time.sleep(1)
                 delete_last_line()
-        
+
+        print("\033c", end="")
         return diff_input
 
 
@@ -158,6 +171,7 @@ class Round():
 
     
     def play(self):
+        print("start play(self)")
         print_game_header()
         alloc_input = []
 
@@ -167,7 +181,7 @@ class Round():
             print("")
             while True:
                 try:
-                    alloc_input = [float(x) for x in input("4 two-digits numbers which sum up to 100 000€:").split(",")]
+                    alloc_input = [float(x) for x in input("4 two-digits numbers which sum up to 100 000€ \n-> comma-separated: #.##,#.##,#.##,#.##\n\n").split(",")]
                     if not round(sum(alloc_input),2) == 100000.0:
                         raise SumUpError(f"\033[31mThe numbers don't sum up to 100 000€ (your total: {format(sum(alloc_input), ",.2f").replace(",", " ")})\033[0m")
                     if not len(alloc_input) == 4 or not isinstance(alloc_input, list):
@@ -175,18 +189,21 @@ class Round():
                     print(alloc_input)
                     break
                 except ValueError:
+                    delete_last_line()
                     print("\033[31mNot valid. Please enter 4 two-digits numbers, separated by commas\033[0m")
                     print("")
                 except SumUpError as e:
+                    delete_last_line()
                     print(e)
                     print("")
             
-                time.sleep(1)
+                time.sleep(0.5)
                 delete_last_line()
         else:
             #play next round:
+            print("PLAY NEXT ROUND    NEXT ROUND")
             ptf_value = self.previous_round_data["end_value"][4]
-            print(f"Please \033[1mallocate {pft_value}€ to the above 3 securities and 1 cash\033[0m.")
+            print(f"Please \033[1mallocate {ptf_value}€ to the above 3 securities and 1 cash\033[0m.")
             print("")
             while True:
                 try:
@@ -209,7 +226,6 @@ class Round():
 
         self.pre_round(alloc_input)
         self.main_round()
-
         return {
             "before_start_reallocate"   : self.before_start_reallocate,
             "before_start_paytax"       : self.before_start_paytax,
@@ -232,7 +248,6 @@ class Round():
         before_start_trnsx_costs    = []
         booking_value               = []
         start_value                 = [] 
-        #alloc_input2                = [] #when selling, taxes might occur->it reduces the money to be allocated, but which purchase to reduce?? the player must decide again
 
         before_start_reallocate = self.pre_round_get_reallocation(alloc_input)
         #get hypothetical delta (gross amount), no extra inputs here
@@ -273,7 +288,7 @@ class Round():
         else:
             print("\nNOT CONFIRMED!")
             time.sleep(2)
-            self.play()
+            #self.play()
 
 
 
@@ -287,17 +302,19 @@ class Round():
         end_value               = self.main_round_get_endvalue(performance, dividends) #add extra steps when dividends occur: free reinvestment or pay-out to cash
         delta_start_end         = self.main_round_get_delta(end_value, self.start_value)
 
+        end_value[4]        = sum(end_value[:4])
+        performance[4]      = end_value[4] / self.start_value[4] -1  
+        delta_start_end[4]  = end_value[4] - self.start_value[4]
+
         self.performance    = performance
         self.dividends      = dividends
         self.end_value      = end_value
         self.delta_start_end= delta_start_end
 
-        self.main_round_print()
-
-        if performance[3] > 0:
-            print(f"Congrats! Your portfolio \033[32mgrew by {performance[3]}%\033[0m (excl. costs and taxes)")
-        else:
-            print(f"Meeehhh. Your portfolio \033[31mlost {performance[3]}%\033[0m (excl. costs and taxes)")
+        #print(f"performanc: \n{performance}\n")
+        #print(f"dividends: \n{dividends}\n")
+        #print(f"start_value: \n{self.start_value}\n")
+        #print(f"end_value: \n{end_value}\n")
 
 
 
@@ -335,7 +352,7 @@ class Round():
     def pre_round_adjust_reallocation(self, before_start_reallocate, before_start_paytax):
         sum_purchases = sum([0 if a < 0 else a for a in before_start_reallocate])
         sum_taxes     = sum(before_start_paytax)
-        list          = []
+        list_new      = []
 
         print("\033[31mATTENTION\n\nYou sell so much that you are in a profit zone. For that, my friend, you have to pay taxes\nThe Finanzamt is very quick - you have to pay:\n\033[0m")
         time.sleep(1)
@@ -393,17 +410,17 @@ class Round():
                 print(e)
                 time.sleep(2)
 
-        list = before_start_reallocate
+        list_new = before_start_reallocate
         if before_start_reallocate[0] > 0:
-            list[0] = a
+            list_new[0] = a
         if before_start_reallocate[1] > 0:
-            list[1] = b
+            list_new[1] = b
         if before_start_reallocate[2] > 0:
-            list[2] = c
+            list_new[2] = c
         if before_start_reallocate[3] > 0:
-            list[3] = d
+            list_new[3] = d
         
-        return list
+        return list_new
 
 
     def pre_round_get_transaction_costs(self, before_start_reallocate):
@@ -433,14 +450,16 @@ class Round():
 
         list_start_value   = [a + b - c for a,b,c in zip(end_value_prev, before_start_reallocate, before_start_trnsx_costs)]
         list_booking_value = [a + b - c for a,b,c in zip(booking_value_prev, before_start_reallocate, before_start_trnsx_costs)]
-        
+        list_start_value[4] = sum(list_start_value[:4])
+
         return (list_start_value, list_booking_value)
 
 
     def pre_round_confirmation(self, before_start_trnsx_costs, before_start_paytax, start_value, booking_value):
         while True:
             try:
-                time.sleep(1)
+                clear_screen()
+                time.sleep(0.5)
                 print("\n\n\033[33;1mPlease Confirm:\033[0m\n")
                 print(f"\033[1mYou will allocate to the following positions: \n{start_value}\033[0m\n")
                 print(f"You will pay taxes as follows: \n{before_start_paytax}   in sum: {sum(before_start_paytax)}\n")
@@ -449,12 +468,18 @@ class Round():
                 x = input("Please confirm to play this round (Y/N): ")
                 if x == "Y":
                     return True
+                    break
                 if x == "N":
                     return False
+                    break
                 else:
                     raise ValueError
             except ValueError:
                 print("Invalid. Please Enter 'Y' to confirm and 'N' to start over the this round")
+
+    def pre_round_print(self):
+        print_game_header()
+        #print_game_history()
 
 
     def main_round_get_perf(self, round):
@@ -465,31 +490,29 @@ class Round():
             x=0.01
         if self.difficulty == 3:
             x=0.02
-        
         list_perf = [
-            float(secs.acell(f"F{round+1}").value), 
-            float(secs.acell(f"J{round+1}").value), 
-            float(secs.acell(f"N{round+1}").value), 
+            float(secs.acell(f"F{round+1}").value.replace(",",".")), 
+            float(secs.acell(f"J{round+1}").value.replace(",",".")), 
+            float(secs.acell(f"N{round+1}").value.replace(",",".")), 
             x, 
             0
         ]
-
         list_div  = [
-            float(secs.acell(f"G{round+1}").value), 
-            float(secs.acell(f"K{round+1}").value), 
-            float(secs.acell(f"O{round+1}").value), 
+            float(secs.acell(f"G{round+1}").value.replace(",",".")), 
+            float(secs.acell(f"K{round+1}").value.replace(",",".")), 
+            float(secs.acell(f"O{round+1}").value.replace(",",".")), 
             0, 
             0
-        ]  
+        ]    
         return (list_perf, list_div)
-        
+
 
     def main_round_get_endvalue(self, performance, dividends):
         end_value = [a * (1 +b) for a,b in zip(self.start_value, performance)]
         into_cash = 0
 
-        if not dividends[0]==0:
-            print("\033[31;1Dividends\033[0m")
+        if not dividends[0]==0 and not dividends[0]*end_value[0] == 0:
+            print("\033[31;1mDividends\033[0m")
             time.sleep(1)
             print(f"At the end of this period, \033[1mSAP\033[0m paid distributions to its investors. You \033[33received {dividends[0]*100:.2f}%\033[0m equal to {dividends[0]*end_value[0]:.2f}€.\n")
             print("\033[1mOptions:\033[0m")
@@ -500,7 +523,7 @@ class Round():
             #if x==1: #reinvest: do nothing because the performance includes the dividends
             end_value[0] = (1 - dividends[0]) * end_value[0] if x == 2 else end_value[0]
         
-        if not dividends[1]==0:
+        if not dividends[1]==0 and not dividends[1]*end_value[1] == 0:
             print("\033[31;1Dividends\033[0m")
             time.sleep(1)
             print(f"At the end of this period, \033[1mTESLA\033[0m paid distributions to its investors. You \033[33received {dividends[1]*100:.2f}%\033[0m equal to {dividends[1]*end_value[1]:.2f}€.\n")
@@ -512,7 +535,7 @@ class Round():
             #if x==1: #reinvest: do nothing because the performance includes the dividends
             end_value[1] = (1 - dividends[1]) * end_value[1] if x == 2 else end_value[1]
 
-        if not dividends[2]==0:
+        if not dividends[2]==0 and not dividends[1]*end_value[1] == 0:
             print("\033[31;1Dividends\033[0m")
             time.sleep(1)
             print(f"At the end of this period, \033[1mIBM\033[0m paid distributions to its investors. You \033[33received {dividends[2]*100:.2f}%\033[0m equal to {dividends[2]*end_value[2]:.2f}€.\n")
@@ -532,17 +555,13 @@ class Round():
         return delta
 
 
-    def main_round_print():
-        print_game_header()
-        print_game_history()
-
-
 class SumUpError(Exception):
     pass
-        
 
 
-# printing functions ############################
+"""
+printing functions:
+"""
 def print_table_into_menu(val1="", val2="", val3="", val4="", val5="", val6="", color=False):
     c = ""
     if color:
@@ -556,7 +575,8 @@ def print_game_header():
     print_throughout("-",True)
     print_table_into_menu("", "SAP", "TESLA", "IBM", "CASH", "TOTAL", True)
     print_throughout(" ", True)
-    #print_into_menu("  ROUND 1  ", True, True, True, True, False)
+    print_into_menu("  ROUND 1  ", True, True, True, True, False)
+    print_throughout(" ", True)
     print("")
 
 def print_game_history(round, rounds_data):
@@ -643,13 +663,19 @@ def delete_last_line():
     # delete last line
     sys.stdout.write('\x1b[2K')
 
+def clear_screen():
+    """
+    clears the terminal screen for better experience
+    """
+    print("\033c", end="")
+
 def input_option(options):
     while True:
         try:
             x = int(input("Enter Option number: "))
             if not isinstance(x, int) or x < 1 or x > options:
                 raise ValueError
-                break
+            break
         except ValueError:
             print(f"Invalid number. Please choose between 1 and {options}.")
     return x
