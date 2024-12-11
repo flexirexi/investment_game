@@ -204,16 +204,24 @@ class Round():
         else:
             #play next round:
             ptf_value = round(self.previous_round_data["end_value"][4],2)
-            print(f"\033[1;32mPlease allocate {ptf_value}€ to the above 3 securities and 1 cash\033[0m.")
-            print("")
+            print(f"\033[1;32mPlease allocate {ptf_value:,.2f}€ to the above 3 securities and 1 cash\033[0m.".replace(",", " "))
+            print("To keep the current values, just enter \033[1mkeep\033[0m\n")
             while True:
                 try:
-                    alloc_input = [round(float(x),2) for x in input(f"4 two-digits numbers which sum up to {ptf_value}€:").split(",")]
-                    if not round(sum(alloc_input),2) == ptf_value:
+                    alloc_input = input(f"4 two-digits numbers which sum up to {ptf_value}€:")
+                    if alloc_input == "keep":
+                        alloc_input = self.previous_round_data["end_value"]
+                        break
+                    else:
+                        print(alloc_input)
+                        alloc_input = [float(x) for x in alloc_input.split(",")]
+                    if  sum(alloc_input) / ptf_value < 0.9 or sum(alloc_input) / ptf_value > 1.1:
                         raise SumUpError(f"\033[31mThe numbers don't sum up to {ptf_value}€ (your total: {format(sum(alloc_input), ",.2f").replace(",", " ")})\033[0m")
-                    if not len(alloc_input) == 4 or not isinstance(alloc_input, list):
+                    if len(alloc_input) < 4 or len(alloc_input) > 4: 
                         raise ValueError
-                    print(alloc_input)
+                    if not isinstance(alloc_input, list):
+                        raise ValueError
+                    
                     break
                 except ValueError:
                     print("\033[31mNot valid. Please enter 4 two-digits numbers, separated by commas\033[0m")
@@ -326,7 +334,7 @@ class Round():
             alloc_input.append(sum(alloc_input))
             list = alloc_input
         else:
-            end_value_previous = self.previous_round_data[f"round {self.round-1}"]["end_value"]
+            end_value_previous = self.previous_round_data["end_value"]
             alloc_input.append(sum(alloc_input))
             list = [a - b for a, b in zip(alloc_input, end_value_previous)]
         return list
@@ -344,7 +352,7 @@ class Round():
             #as long as the sale amount is smaller than the previous round's book value - there are no taxes
             #everything above book value is profit 
             #assuming that your current market value is higher than the book value, if not, you have loss 
-            book_value_prev = self.previous_round_data[f"round {self.round-1}"]["book_value"]
+            book_value_prev = self.previous_round_data["booking_value"]
             taxable_amount = [(0 if -a-b < 0 else -a-b) for a,b in zip(before_start_reallocate, book_value_prev)] #only when book_value > sale; remember, we need positiv sales numbers thats why we make them positive with -a
             list = [a * b for a, b in zip(taxable_amount, tax)]
         return list
@@ -572,6 +580,7 @@ def print_percenttable_into_menu(val1="", val2="", val3="", val4="", val5="", va
 
 def print_numbertable_into_menu(val1="", val2="", val3="", val4="", val5="", val6="", color=False, bold=False):
     c = ""
+    b = ""
     if color:
         c = "\033[34m"
     if bold:
