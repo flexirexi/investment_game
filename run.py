@@ -112,6 +112,49 @@ class InvestmentGame():
 
 
     def rules(self, difficulty=None):
+        print("                    ", end="")
+        print_with_attention("THE INVESTMENT GAME")
+        
+        print_throughout("_", False)
+        print_into_menu("THE RULES", True, True, True, False, False)
+        print_throughout("-", True)
+        
+        print_into_menu("Mode: \033[1mEASY\033[0m", True, False, False, False, False)
+        print_throughout(" ", True)
+        print_into_menu("- You will have 100 000€ at the beginning of the game", True, False, False, False, False)
+        print_into_menu("- You play 5 rounds", True, False, False, False, False)
+        print_into_menu("- Each round, you can re-allocate your money, do it wisely", True, False, False, False, False)
+        print_into_menu("- Every purchase will cost 3% transaction costs, so, rebalancing is expensive", True, False, False, False, False)
+        print_into_menu("- There is no interest rate on the cash account", True, False, False, False, False)
+        print_into_menu("- Sometimes dividends occur, you can choose to reinvest for free or take out", True, False, False, False, False)
+        print_throughout(" ", True)
+
+        print_into_menu("Mode: \033[1mMEDIUM\033[0m", True, False, False, False, False)
+        print_throughout(" ", True)
+        print_into_menu("- Everything that applies to EASY, is valid here, too", True, False, False, False, False)
+        print_into_menu("- You will have to \033[1mpay 30% taxes\033[0m on the profits of each sale, \033[1mif you make profits\033[0m", True, False, False, False, False)
+        print_into_menu("- whether you are in the profit zone or not depends if you sell more than you have bought/sould in sum:", True, False, False, False, False)
+        print_into_menu("  100 purchase, current value 150, sale 120 -> you pay 30% on 20=6", True, False, False, False, False)
+        print_into_menu("- Every purchase will cost 6% transaction costs, rebalancing is even more expensive", True, False, False, False, False)
+        print_throughout(" ", True)
+
+        print_into_menu("Mode: \033[1mHARD\033[0m", True, False, False, False, False)
+        print_throughout(" ", True)
+        print_into_menu("- Everything that applies to MEDIUM, is valid here, too", True, False, False, False, False)
+        print_into_menu("- You will have to \033[1mpay 40% taxes\033[0m on the profits of each sale, \033[1mif you make profits\033[0m", True, False, False, False, False)
+        print_into_menu("- Every purchase will cost 10% transaction costs, rebalancing is even more expensive", True, False, False, False, False)
+        print_into_menu("- With that I want to see you making money :D", True, False, False, False, False)
+        print_throughout(" ", True)
+
+        print_throughout("-", True)
+        print_into_menu("Enter a number:", True, False, True, False, False)
+        print_throughout(" ", True)
+        print_into_menu("1. start", True, False, True, False, False)
+        print_into_menu("2. rules", True, False, False, False, False)
+        print_into_menu("3. rankings", True, False, False, False, False)
+        print_into_menu("4. exit game", True, False, False, False, False)
+        print_throughout("_", True)
+        print("")
         print("rules:(highlight the play mode if the user has already selected one)")
         input("hit any key to continue: ")
 
@@ -441,9 +484,9 @@ class Round():
         if self.difficulty == 1:
             x = 0.03
         elif self.difficulty == 2:
-            x = 0.04
+            x = 0.06
         elif self.difficulty == 3:
-            x = 0.05
+            x = 0.10
         
         costs_rel = [x, x, x, 0, 0]
         costs_abs = [(0 if a < 0 else a) * b for a, b in zip(before_start_reallocate, costs_rel)]
